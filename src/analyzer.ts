@@ -49,9 +49,12 @@ export async function analyze(content: string | ArrayBuffer | null | undefined):
             .filter(c => typeof c.component === "object")
             .flatMap(c => {
                 if (c.component.Dialog) {
-                    let children = c.component.Dialog.children.map((childName: string) => ({ source: childName, target: c.id }));
-                    let script = c.component.Dialog.script.map((childName: string) => ({ source: childName, target: c.id }));
-                    return [...children, ...script];
+                    const referencedNames = new Set<string>([...c.component.Dialog.children, ...c.component.Dialog.script]);
+                    let children = [];
+                    for (const name of referencedNames) {
+                        children.push({ source: name, target: c.id });
+                    }
+                    return children;
                 } else {
                     return c.component.Computation.map((childName: string) => ({ source: childName, target: c.id }));
                 }

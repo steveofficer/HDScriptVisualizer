@@ -1,12 +1,14 @@
 use nom::{
     branch::alt,
+    number::complete::float,
     bytes::complete::tag,
     character::complete::{ anychar, char, line_ending, multispace0, multispace1, not_line_ending, one_of, none_of },
     combinator::{ map, opt, peek, recognize, value, rest },
     error::{ context, make_error, ErrorKind },
     multi::{ many0, many_till, separated_list },
     sequence::{ delimited, preceded, separated_pair, tuple, terminated },
-    Err, IResult,
+    Err, 
+    IResult
 };
 
 use std::iter::FromIterator;
@@ -176,10 +178,6 @@ pub struct Script<'a> {
     pub body: Vec<Statement<'a>>,
 }
 
-fn parse_number(input: &str) -> IResult<&str, f32> {
-    nom::number::complete::float(input)
-}
-
 fn parse_boolean(input: &str) -> IResult<&str, bool> {
     alt((value(true, tag("TRUE")), value(false, tag("FALSE"))))(input)
 }
@@ -208,13 +206,11 @@ fn parse_binary_operator(input: &str) -> IResult<&str, BinaryOperation> {
 }
 
 fn parenthesized<'a, R, T>(g: T, opening: char, closing: char) -> impl Fn(&'a str) -> IResult<&'a str, R>
-where
-    T: Fn(&'a str) -> IResult<&'a str, R>,
-{
+where T: Fn(&'a str) -> IResult<&'a str, R> {
     delimited(
-        terminated(char(opening), multispace0),
-        g,
-        delimited(multispace0, char(closing), multispace0),
+        terminated(char(opening), multispace0), 
+        g, 
+        delimited(multispace0, char(closing), multispace0)
     )
 }
 
@@ -222,32 +218,22 @@ fn parse_not_expression(input: &str) -> IResult<&str, Expression> {
     map(
         preceded(
             delimited(multispace0, alt((tag("!"), tag("NOT"))), multispace0),
-            parse_entry_expression,
+            parse_entry_expression
         ),
-        |e| {
-            Expression::Unary(Box::new(UnaryExpression {
-                operation: UnaryOperation::Not,
-                expression: e,
-            }))
-        },
+        |e| Expression::Unary(Box::new(UnaryExpression { operation: UnaryOperation::Not, expression: e }))
     )(input)
 }
 
 fn parse_negation_expression(input: &str) -> IResult<&str, Expression> {
-    map(preceded(tag("-"), parse_expression_atom), |e| {
-        Expression::Unary(Box::new(UnaryExpression {
-            operation: UnaryOperation::Negate,
-            expression: e,
-        }))
-    })(input)
+    map(
+        preceded(tag("-"), parse_expression_atom), 
+        |e| Expression::Unary(Box::new(UnaryExpression { operation: UnaryOperation::Negate, expression: e }))
+    )(input)
 }
 
 // This uses the precedence climbing algorithm to create an AST where the binary expression is properly nested based
 //  on the precedence of the operators joining the atoms of the expression
-fn parse_operator_precedence(
-    current_level: u8,
-    input: &str,
-) -> IResult<&str, (BinaryOperation, Expression)> {
+fn parse_operator_precedence(current_level: u8, input: &str) -> IResult<&str, (BinaryOperation, Expression)> {
     // Look ahead to see if the next token is a binary operation.
     let (input, op) = peek(parse_binary_operator)(input)?;
 
@@ -262,7 +248,7 @@ fn parse_operator_precedence(
         | BinaryOperation::NE => 3,
         BinaryOperation::Add | BinaryOperation::Subtract => 4,
         BinaryOperation::Multiply | BinaryOperation::Divide => 5,
-        _ => 6,
+        _ => 6
     };
 
     if next_precedence_level < current_level {
@@ -325,23 +311,19 @@ fn parse_variable_reference(input: &str) -> IResult<&str, VariableReference> {
 pub fn parse_expression_atom(input: &str) -> IResult<&str, Expression> {
     let (input, expression) = terminated(
         alt((
-        parenthesized(parse_entry_expression, '(', ')'),
-        map(parse_number, |d| {
-            Expression::Literal(LiteralExpression::Number(d))
-        }),
-        map(parse_boolean, |b| {
-            Expression::Literal(LiteralExpression::Boolean(b))
-        }),
-        // String literal
-        map(parse_string_literal, |s| {
-            Expression::Literal(LiteralExpression::Text(s))
-        }),
-        // Unary operators
-        parse_not_expression,
-        parse_negation_expression,
-        map(parse_function_call, Expression::FunctionCall),
-        map(parse_variable_reference, |v| Expression::Variable(v)),
-    )),multispace0)(input)?;
+            parenthesized(parse_entry_expression, '(', ')'),
+            map(float, |d| Expression::Literal(LiteralExpression::Number(d))),
+            map(parse_boolean, |b| Expression::Literal(LiteralExpression::Boolean(b))),
+            // String literal
+            map(parse_string_literal, |s| Expression::Literal(LiteralExpression::Text(s))),
+            // Unary operators
+            parse_not_expression,
+            parse_negation_expression,
+            map(parse_function_call, Expression::FunctionCall),
+            map(parse_variable_reference, |v| Expression::Variable(v)),
+        )),
+        multispace0
+    )(input)?;
 
     let (input, suffix) = terminated(opt(alt((tag("DAYS"), tag("MONTHS"), tag("YEARS"), tag("DAY"), tag("MONTH"), tag("YEAR")))), multispace0)(input)?;
 
@@ -383,7 +365,7 @@ pub fn parse_entry_expression(input: &str) -> IResult<&str, Expression> {
 
 fn parse_limit_expression(input: &str) -> IResult<&str, LimitExpression> {
     alt((
-        map(parse_number, |n| LimitExpression::Number(n)),
+        map(float, |n| LimitExpression::Number(n)),
         map(not_line_ending, |v| LimitExpression::Variable(v)),
     ))(input)
 }
@@ -394,53 +376,21 @@ fn remaining_text(input: &str) -> IResult<&str, &str> {
 
 fn parse_display_instruction(input: &str) -> IResult<&str, Instruction> {
     terminated(
-    alt((
-            map(
-                preceded(tag("ASK"), remaining_text),
-                |v| Instruction::Display(DisplayInstruction::Ask(v)),
-            ),    
+        alt((
+            map(preceded(tag("ASK"), remaining_text), |v| Instruction::Display(DisplayInstruction::Ask(v))),    
             value(Instruction::Display(DisplayInstruction::GrayAll), tag("GRAY ALL")),
-            map(
-                preceded(tag("GRAY"), remaining_text),
-                |v| Instruction::Display(DisplayInstruction::Gray(v)),
-            ),
-            value(
-                Instruction::Display(DisplayInstruction::UngrayAll),
-                tag("UNGRAY ALL"),
-            ),
-            map(
-                preceded(tag("UNGRAY"), remaining_text),
-                |v| Instruction::Display(DisplayInstruction::Ungray(v)),
-            ),
-            value(
-                Instruction::Display(DisplayInstruction::ShowAll),
-                tag("SHOW ALL"),
-            ),
-            map(
-                preceded(tag("SHOW"), remaining_text),
-                |v| Instruction::Display(DisplayInstruction::Show(v)),
-            ),
-            value(
-                Instruction::Display(DisplayInstruction::HideAll),
-                tag("HIDE ALL"),
-            ),
-            map(
-                preceded(tag("HIDE"), remaining_text),
-                |v| Instruction::Display(DisplayInstruction::Hide(v)),
-            ),
-            value(
-                Instruction::Display(DisplayInstruction::RequireAll),
-                tag("REQUIRE ALL"),
-            ),
-            map(
-                preceded(tag("REQUIRE"), remaining_text),
-                |v| Instruction::Display(DisplayInstruction::Require(v)),
-            ),
-            map(
-                preceded(tag("LIMIT"), preceded(multispace1, parse_limit_expression)),
-                |v| Instruction::Display(DisplayInstruction::Limit(v)),
-            )
-)), multispace0
+            map(preceded(tag("GRAY"), remaining_text), |v| Instruction::Display(DisplayInstruction::Gray(v))),
+            value(Instruction::Display(DisplayInstruction::UngrayAll), tag("UNGRAY ALL")),
+            map(preceded(tag("UNGRAY"), remaining_text), |v| Instruction::Display(DisplayInstruction::Ungray(v))),
+            value(Instruction::Display(DisplayInstruction::ShowAll), tag("SHOW ALL")),
+            map(preceded(tag("SHOW"), remaining_text), |v| Instruction::Display(DisplayInstruction::Show(v))),
+            value(Instruction::Display(DisplayInstruction::HideAll), tag("HIDE ALL")),
+            map(preceded(tag("HIDE"), remaining_text), |v| Instruction::Display(DisplayInstruction::Hide(v))),
+            value(Instruction::Display(DisplayInstruction::RequireAll), tag("REQUIRE ALL")),
+            map(preceded(tag("REQUIRE"), remaining_text), |v| Instruction::Display(DisplayInstruction::Require(v))),
+            map(preceded(tag("LIMIT"), preceded(multispace1, parse_limit_expression)), |v| Instruction::Display(DisplayInstruction::Limit(v)))
+        )), 
+        multispace0
     )(input)
 }
 
@@ -540,12 +490,13 @@ pub fn parse_while_statement(input: &str) -> IResult<&str, LoopStatement> {
 
 pub fn parse_repeat_statement(input: &str) -> IResult<&str, LoopStatement> {
     let (input, (dialog, (body, _))) = 
-    terminated(
-tuple((
-            preceded(tag("REPEAT "), parse_variable_reference),
-            many_till(parse_statement, preceded(multispace0, tag("END REPEAT")))
-        )), 
-    multispace0)(input)?;
+        terminated(
+            tuple((
+                preceded(tag("REPEAT "), parse_variable_reference),
+                many_till(parse_statement, preceded(multispace0, tag("END REPEAT")))
+            )), 
+            multispace0
+        )(input)?;
 
     Ok((
         input,
@@ -625,13 +576,7 @@ pub fn parse_set_instruction(input: &str) -> IResult<&str, ScriptInstruction> {
 }
 
 pub fn parse_erase_instruction(input: &str) -> IResult<&str, ScriptInstruction> {
-    map(
-        preceded(
-        tag("ERASE "),
-        parse_variable_reference,
-        ),
-        |v| ScriptInstruction::Erase(v),
-    )(input)
+    map(preceded(tag("ERASE "), parse_variable_reference), |v| ScriptInstruction::Erase(v))(input)
 }
 
 pub fn parse_add_instruction(input: &str) -> IResult<&str, ScriptInstruction> {

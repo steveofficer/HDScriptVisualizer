@@ -74,7 +74,8 @@ function App() {
               config={{
                 directed: true,
                 width: 1700,
-                height: 1000
+                height: 1000,
+                focusAnimationDuration: 1
               }}
               data={state.data}
             >
