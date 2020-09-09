@@ -83,7 +83,7 @@ fn output_variable_reference(variable: &VariableReference, uses: &mut HashSet<St
     match &variable.indexer {
         Some(i) => {
             
-            for (idx, e) in i.args.iter().enumerate() {
+            for e in i.args.iter() {
                 output_expression(e, uses);
             }
         },
@@ -103,7 +103,7 @@ fn output_expression(expression: &Expression, uses: &mut HashSet<String>) {
         Expression::Unary(ex) => output_unary_expression(ex, uses),
         Expression::FunctionCall(call) => {
             uses.insert(call.name.to_owned());
-            for (idx, e) in call.args.iter().enumerate() {
+            for e in call.args.iter() {
                 output_expression(e, uses);
             }
         },
@@ -127,7 +127,7 @@ fn output_binary_expression(binary_expression: &BinaryExpression, uses: &mut Has
         },
         _ => {
             output_expression(left, uses);
-            for (op, expr) in right.iter() {
+            for (_operator, expr) in right.iter() {
                 output_expression(expr, uses);
             }
         }

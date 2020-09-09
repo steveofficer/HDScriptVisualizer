@@ -2,7 +2,7 @@ const wasmLoader = import('./native/build');
 
 function getString(content: string | ArrayBuffer): string {
     if (content instanceof ArrayBuffer) {
-        const decoder = new TextDecoder("utf-8");
+        const decoder = new TextDecoder('utf-8');
         return decoder.decode(content);
     }
 
@@ -21,32 +21,35 @@ export async function analyze(content: string | ArrayBuffer | null | undefined):
 
         let components = names.map((name: string) => {
             const component = visualElements[name];
-            let color = "purple";
-
-            if (typeof component === "string") {
-                switch (component) {
-                    case 'Text': color = "#ffa600"; break;
-                    case 'Number': color = "#374c80"; break;
-                    case 'MultipleChoice': color = "#7a5195"; break;
-                    case 'TrueFalse': color = "#bc5090"; break;
-                    case 'Date': color = "#ef5675"; break;
-                }
-            } else if (component.Dialog) {
-                color = "#ff764a"
-            } else {
-                color = "#003f5c";
-            }
-
-            return {
+            let node = {
                 id: name,
                 labelPosition: 'bottom',
-                color,
+                color: 'purple',
+                symbolType: 'circle',
                 component
             };
+
+            if (typeof component === 'string') {
+                switch (component) {
+                    case 'Text': node.color = '#75e6da'; break;
+                    case 'Number': node.color = '#1e2640'; break;
+                    case 'MultipleChoice': node.color = '#ffdb15'; break;
+                    case 'TrueFalse': node.color = '#a91b60'; break;
+                    case 'Date': node.color = '#d1a26e'; break;
+                }
+            } else if (component.Dialog) {
+                node.color = '#d57652';
+                node.symbolType = 'square';
+            } else {
+                node.color = '#0c4160';
+                node.symbolType = 'triangle';
+            }
+
+            return node;
         });
 
         let links = components
-            .filter(c => typeof c.component === "object")
+            .filter(c => typeof c.component === 'object')
             .flatMap(c => {
                 if (c.component.Dialog) {
                     const referencedNames = new Set<string>([...c.component.Dialog.children, ...c.component.Dialog.script]);

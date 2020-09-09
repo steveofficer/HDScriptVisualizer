@@ -6,10 +6,12 @@ export function DependencyGraph(props: {data: any}) {
         <Graph
             id="graph-id"
             config={{
-            directed: true,
-            width: 1700,
-            height: 1000,
-            focusAnimationDuration: 1
+                directed: true,
+                width: 1700,
+                height: 1000,
+                focusAnimationDuration: 1,
+                nodeHighlightBehavior: true,
+                highlightDegree: 2
             }}
             data={props.data}
         >
