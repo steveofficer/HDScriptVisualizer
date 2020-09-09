@@ -1,10 +1,9 @@
 import React, { Fragment, ChangeEvent } from 'react';
 import './App.css';
-
-import { Drawer, List, ListItem, ListItemIcon, ListItemText, CssBaseline, CircularProgress } from '@material-ui/core';
-import { Inbox, TextFields, CalendarToday, DoneOutline, FormatListBulleted } from '@material-ui/icons';
-import { Graph } from 'react-d3-graph';
+import { CssBaseline, CircularProgress } from '@material-ui/core';
 import { wrap, transfer } from 'comlink';
+import { DependencyGraph } from './native/src/Components/Graph';
+import { Sidebar } from './native/src/Components/Sidebar';
 
 enum ComponentType {
   All,
@@ -33,59 +32,27 @@ function App() {
     r.readAsArrayBuffer(e.target.files![0]);
   };
 
+  const childElement = (() => {
+    if (state.loading) {
+      return <CircularProgress size={200}/>;
+    }
+
+    if (state.data.nodes.length > 0) {
+      return <DependencyGraph data={state.data}></DependencyGraph>
+    }
+    return <div></div>;
+  })();
+  
   return (
       <Fragment>
         <CssBaseline />
-        <Drawer variant="permanent" style={{width: "220px" }}>
-          <List>
-              <ListItem button onClick={() => updateState({...state, typeFilter: ComponentType.All})}>
-                <ListItemIcon><Inbox /></ListItemIcon>
-                <ListItemText primary="All Components" />
-              </ListItem>
-              <ListItem button onClick={() => updateState({...state, typeFilter: ComponentType.Text})}>
-                <ListItemIcon><TextFields /></ListItemIcon>
-                <ListItemText primary="Text" />
-              </ListItem>
-              <ListItem button onClick={() => updateState({...state, typeFilter: ComponentType.Number})}>
-                <ListItemIcon><Inbox /></ListItemIcon>
-                <ListItemText primary="Number" />
-              </ListItem>
-              <ListItem button onClick={() => updateState({...state, typeFilter: ComponentType.Date})}>
-                <ListItemIcon><CalendarToday /></ListItemIcon>
-                <ListItemText primary="Date" />
-              </ListItem>
-              <ListItem button onClick={() => updateState({...state, typeFilter: ComponentType.TrueFalse})}>
-                <ListItemIcon><DoneOutline /></ListItemIcon>
-                <ListItemText primary="True\False" />
-              </ListItem>
-              <ListItem button onClick={() => updateState({...state, typeFilter: ComponentType.MultipleChoice})}>
-                <ListItemIcon><FormatListBulleted /></ListItemIcon>
-                <ListItemText primary="Multiple Choice" />
-              </ListItem>
-            </List>
-        </Drawer>
+        <Sidebar updateComponentFilter={() => {}}></Sidebar>
         <main>
+          <div>
             <input id="cmpLoader" type="file" onChange={loadComponentFile}></input>
-            
-            { state.data.nodes.length > 0
-            ?
-            <Graph
-              id="graph-id"
-              config={{
-                directed: true,
-                width: 1700,
-                height: 1000,
-                focusAnimationDuration: 1
-              }}
-              data={state.data}
-            >
-            </Graph>
-            : <div></div>
-            }
-
-          { state.loading ? <CircularProgress size={200}/> : null }
+          </div>
+          {childElement}
         </main>
-        
       </Fragment>
   );
 }
