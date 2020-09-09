@@ -2,7 +2,7 @@ import React, { Fragment, ChangeEvent } from 'react';
 import './App.css';
 import { CssBaseline, CircularProgress } from '@material-ui/core';
 import { wrap, transfer } from 'comlink';
-import { DependencyGraph } from './components/Graph';
+import { DependencyGraph } from './components/DependencyGraph';
 import { Sidebar } from './components/Sidebar';
 
 const reader = new FileReader();
