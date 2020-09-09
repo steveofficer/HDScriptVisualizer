@@ -11,7 +11,7 @@ export function DependencyGraph(props: {data: any}) {
                 height: 1000,
                 focusAnimationDuration: 1,
                 nodeHighlightBehavior: true,
-                highlightDegree: 2
+                highlightDegree: 1
             }}
             data={props.data}
         >
