@@ -2,34 +2,25 @@ import React, { Fragment, ChangeEvent } from 'react';
 import './App.css';
 import { CssBaseline, CircularProgress } from '@material-ui/core';
 import { wrap, transfer } from 'comlink';
-import { DependencyGraph } from './native/src/Components/Graph';
-import { Sidebar } from './native/src/Components/Sidebar';
+import { DependencyGraph } from './components/Graph';
+import { Sidebar } from './components/Sidebar';
 
-enum ComponentType {
-  All,
-  Text,
-  Number,
-  Date,
-  TrueFalse,
-  MultipleChoice
-}
-const r = new FileReader();
-
+const reader = new FileReader();
 const worker = new Worker('./web-worker', { name: 'analyzer', type: 'module' });
 const workerApi = wrap<import('./web-worker').Analyzer>(worker);
 
 function App() {
-  let [state, updateState] = React.useState({ loading: false, selectedNode: undefined, data: { nodes: [], links: []}, typeFilter: ComponentType.All });
+  let [state, updateState] = React.useState({ loading: false, selectedNode: undefined, data: { nodes: [], links: []}, typeFilter: "All" });
 
   const loadComponentFile = (e: ChangeEvent<HTMLInputElement>) => {
-    r.onload = async x => {
+    reader.onload = async componentFile => {
       updateState({...state, loading: true, data: { nodes: [], links: []}});
-      let data = x.target?.result as ArrayBuffer;
+      let data = componentFile.target?.result as ArrayBuffer;
       const [components, links] = await workerApi.analyze(transfer(data, [data]));
 
       updateState({ ...state, data: { nodes: components, links}, loading: false });
     };
-    r.readAsArrayBuffer(e.target.files![0]);
+    reader.readAsArrayBuffer(e.target.files![0]);
   };
 
   const childElement = (() => {
