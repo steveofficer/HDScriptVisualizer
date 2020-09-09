@@ -3,7 +3,7 @@ use crate::hd_script_parser;
 
 use hd_script_parser::*;
 
-pub fn collect(script: &Script) -> HashSet<String> {
+pub fn parse(script: &Script) -> HashSet<String> {
     let mut result = HashSet::new();
     output_statements(&script.body, &mut result);
     result

@@ -31,11 +31,11 @@ export async function analyze(content: string | ArrayBuffer | null | undefined):
                     case 'TrueFalse': color = "#bc5090"; break;
                     case 'Date': color = "#ef5675"; break;
                 }
-              } else if (component.Dialog) {
+            } else if (component.Dialog) {
                 color = "#ff764a"
-              } else {
+            } else {
                 color = "#003f5c";
-              }
+            }
 
             return {
                 id: name,
@@ -66,20 +66,3 @@ export async function analyze(content: string | ArrayBuffer | null | undefined):
         console.error(`${e}`);
     }
 }
-
-/*
-if (typeof t === "string") {
-    key = t;
-    switch (t) {
-        case 'Text': color = "#ffa600"; break;
-        case 'Number': color = "#374c80"; break;
-        case 'MultipleChoice': color = "#7a5195"; break;
-        case 'TrueFalse': color = "#bc5090"; break;
-        case 'Date': color = "#ef5675"; break;
-    }
-  } else if (t.Dialog) {
-    color = "#ff764a"
-  } else {
-    color = "#003f5c";
-  }
-  */

@@ -2,7 +2,7 @@ extern crate wasm_bindgen;
 
 mod hd_script_parser;
 mod xml_parser;
-mod ast_visitor;
+mod dependency_parser;
 
 use xml_parser::{Node, XmlElement};
 use std::collections::{HashSet, HashMap};
@@ -47,7 +47,7 @@ fn parse_script_node(element: &XmlElement) -> HashSet<String> {
         Some(Node::XmlElement(xe)) if xe.children.len() > 0 => {
             let script_body = xe.children[0].as_value();
             let (_, ast) = hd_script_parser::parse(script_body).unwrap();
-            ast_visitor::collect(&ast)
+            dependency_parser::parse(&ast)
         },
         _ => HashSet::new()
     }
