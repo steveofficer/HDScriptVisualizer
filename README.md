@@ -9,6 +9,7 @@ The project has 3 main parts to it.
 2. A Web Worker that runs the Web Assembly Module on a background thread. This code is located in `src/web-worker`
 3. A React application that allows a user to open a component file, triggers the Web Worker to run the analyzer, and then renders the
    result as a directed graph.
+   The layout is performed by D3 via the react-d3-graph library.
 
 ## Example
 The following component file
@@ -53,4 +54,6 @@ The following component file
     </hd:components>
 </hd:componentLibrary>
 ```
-produces the following graph ![Screenshot](/images/Example.png)
+
+will render the following graph
+![Screenshot](/images/Example.png)
