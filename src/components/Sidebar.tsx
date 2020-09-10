@@ -7,31 +7,22 @@ export function Sidebar(props: { activeFilter: string, setComponentFilter(compon
     return (
         <Drawer variant="permanent" style={{width: "220px" }}>
           <List>
-              <ListItem button selected={props.activeFilter === "All"} onClick={() => props.setComponentFilter("All")}>
-                <ListItemIcon><Inbox /></ListItemIcon>
-                <ListItemText primary="All Components" />
-              </ListItem>
-              <ListItem button selected={props.activeFilter === "Text"} onClick={() => props.setComponentFilter("Text")}>
-                <ListItemIcon><TextFields /></ListItemIcon>
-                <ListItemText primary="Text" />
-              </ListItem>
-              <ListItem button selected={props.activeFilter === "Number"} onClick={() => props.setComponentFilter("Number")}>
-                <ListItemIcon><Inbox /></ListItemIcon>
-                <ListItemText primary="Number" />
-              </ListItem>
-              <ListItem button selected={props.activeFilter === "Date"} onClick={() => props.setComponentFilter("Date")}>
-                <ListItemIcon><CalendarToday /></ListItemIcon>
-                <ListItemText primary="Date" />
-              </ListItem>
-              <ListItem button selected={props.activeFilter === "TrueFalse"} onClick={() => props.setComponentFilter("TrueFalse")}>
-                <ListItemIcon><DoneOutline /></ListItemIcon>
-                <ListItemText primary="True\False" />
-              </ListItem>
-              <ListItem button selected={props.activeFilter === "MultipleChoice"} onClick={() => props.setComponentFilter("MultipleChoice")}>
-                <ListItemIcon><FormatListBulleted /></ListItemIcon>
-                <ListItemText primary="Multiple Choice" />
-              </ListItem>
-            </List>
+            {
+              [ 
+                { name: "All", icon: <Inbox /> },
+                { name: "Text", icon: <TextFields /> },
+                { name: "Number", icon: <Inbox /> },
+                { name: "Date", icon: <CalendarToday /> },
+                { name: "TrueFalse", icon: <DoneOutline /> },
+                { name: "MultipleChoice", icon: <FormatListBulleted /> },
+              ].map(item => 
+                <ListItem key={item.name} button selected={props.activeFilter === item.name} onClick={() => props.setComponentFilter(item.name as ComponentType)}>
+                  <ListItemIcon>{item.icon}</ListItemIcon>
+                  <ListItemText primary={item.name} />
+                </ListItem>
+              )
+            }
+          </List>
         </Drawer>
     );
 }
