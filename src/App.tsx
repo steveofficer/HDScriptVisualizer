@@ -4,13 +4,14 @@ import { CssBaseline, CircularProgress } from '@material-ui/core';
 import { wrap, transfer } from 'comlink';
 import { DependencyGraph } from './components/DependencyGraph';
 import { Sidebar } from './components/Sidebar';
+import { ComponentType, Component, Link } from './types/Components';
 
 const reader = new FileReader();
 const worker = new Worker('./web-worker', { name: 'analyzer', type: 'module' });
 const workerApi = wrap<import('./web-worker').Analyzer>(worker);
 
 function App() {
-  let [state, updateState] = React.useState({ loading: false, selectedNode: undefined, data: { nodes: [], links: []}, typeFilter: "All" });
+  let [state, updateState] = React.useState({ loading: false, data: { nodes: new Array<Component>(), links: new Array<Link>() }, activeFilter: "All" });
 
   const loadComponentFile = (e: ChangeEvent<HTMLInputElement>) => {
     reader.onload = async componentFile => {
@@ -37,7 +38,10 @@ function App() {
   return (
       <Fragment>
         <CssBaseline />
-        <Sidebar updateComponentFilter={() => {}}></Sidebar>
+        <Sidebar activeFilter={state.activeFilter} setComponentFilter={(componentType: ComponentType) => {
+          let newNodes = state.data.nodes.map(node => ({ ...node, strokeColor: (componentType === "All" || node.type === componentType) ? "black" : "white" }));
+          updateState({ ...state, activeFilter: componentType, data: { nodes: newNodes, links: state.data.links }});
+        }}></Sidebar>
         <main>
           <div>
             <input id="cmpLoader" type="file" onChange={loadComponentFile}></input>

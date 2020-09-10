@@ -1,7 +1,7 @@
 import React from 'react';
-import { Graph } from 'react-d3-graph';
+import { Graph, GraphData, GraphNode, GraphLink } from 'react-d3-graph';
 
-export function DependencyGraph(props: {data: any}) {
+export function DependencyGraph(props: {data: GraphData<GraphNode, GraphLink>}) {
     return (
         <Graph
             id="graph-id"

@@ -1,3 +1,5 @@
+import { Component, Link } from './types/Components';
+
 const wasmLoader = import('./native/build');
 
 function getString(content: string | ArrayBuffer): string {
@@ -9,9 +11,9 @@ function getString(content: string | ArrayBuffer): string {
     return content;
 }
 
-export async function analyze(content: string | ArrayBuffer | null | undefined): Promise<any> {
+export async function analyze(content: string | ArrayBuffer | null | undefined): Promise<[Component[], Link[]]> {
     if (content === undefined || content === null) {
-        return Promise.resolve([null, null]);
+        return [[], []];
     }
 
     try {
@@ -26,10 +28,12 @@ export async function analyze(content: string | ArrayBuffer | null | undefined):
                 labelPosition: 'bottom',
                 color: 'purple',
                 symbolType: 'circle',
-                component
+                component,
+                type: ""
             };
 
             if (typeof component === 'string') {
+                node.type = component;
                 switch (component) {
                     case 'Text': node.color = '#75e6da'; break;
                     case 'Number': node.color = '#1e2640'; break;
@@ -40,9 +44,11 @@ export async function analyze(content: string | ArrayBuffer | null | undefined):
             } else if (component.Dialog) {
                 node.color = '#d57652';
                 node.symbolType = 'square';
+                node.type = "Dialog";
             } else {
                 node.color = '#0c4160';
                 node.symbolType = 'triangle';
+                node.type = "Computation";
             }
 
             return node;
@@ -67,5 +73,6 @@ export async function analyze(content: string | ArrayBuffer | null | undefined):
     }
     catch (e) {
         console.error(`${e}`);
+        return [[], []];
     }
 }
