@@ -11,7 +11,7 @@ function getString(content: string | ArrayBuffer): string {
     return content;
 }
 
-export async function analyze(content: string | ArrayBuffer | null | undefined): Promise<[Component[], Link[]]> {
+export async function analyze(content: string | ArrayBuffer | null | undefined, typeColorMap: { [K:string]: string }): Promise<[Component[], Link[]]> {
     if (content === undefined || content === null) {
         return [[], []];
     }
@@ -29,28 +29,21 @@ export async function analyze(content: string | ArrayBuffer | null | undefined):
                 color: 'purple',
                 symbolType: 'circle',
                 component,
-                type: ""
+                type: ''
             };
-
+            
             if (typeof component === 'string') {
                 node.type = component;
-                switch (component) {
-                    case 'Text': node.color = '#75e6da'; break;
-                    case 'Number': node.color = '#1e2640'; break;
-                    case 'MultipleChoice': node.color = '#ffdb15'; break;
-                    case 'TrueFalse': node.color = '#a91b60'; break;
-                    case 'Date': node.color = '#d1a26e'; break;
-                }
+                node.color = typeColorMap[node.type];
             } else if (component.Dialog) {
-                node.color = '#d57652';
+                node.type = 'Dialog';
                 node.symbolType = 'square';
-                node.type = "Dialog";
             } else {
-                node.color = '#0c4160';
+                node.type = 'Computation';
                 node.symbolType = 'triangle';
-                node.type = "Computation";
             }
-
+            node.color = typeColorMap[node.type];
+            
             return node;
         });
 

@@ -15,6 +15,9 @@ export function DependencyGraph(props: {data: GraphData<GraphNode, GraphLink>}) 
                 node: {
                     strokeColor: 'black',
                     strokeWidth: 1
+                },
+                link: {
+                    color: '#c9cdff'
                 }
             }}
             data={props.data}

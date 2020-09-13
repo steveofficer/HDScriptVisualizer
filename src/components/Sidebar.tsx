@@ -3,7 +3,7 @@ import { Drawer, List, ListItem, ListItemIcon, ListItemText } from '@material-ui
 import { Inbox, TextFields, CalendarToday, DoneOutline, FormatListBulleted } from '@material-ui/icons';
 import { ComponentType } from '../types/Components';
 
-export function Sidebar(props: { activeFilter: string, setComponentFilter(component: ComponentType): void }) {
+export function Sidebar(props: { activeFilter: string, setComponentFilter(component: ComponentType): void, colorMap: { [x:string]: string } }) {
     return (
         <Drawer variant="permanent" style={{width: "220px" }}>
           <List>
@@ -17,7 +17,7 @@ export function Sidebar(props: { activeFilter: string, setComponentFilter(compon
                 { name: "MultipleChoice", icon: <FormatListBulleted /> },
               ].map(item => 
                 <ListItem key={item.name} button selected={props.activeFilter === item.name} onClick={() => props.setComponentFilter(item.name as ComponentType)}>
-                  <ListItemIcon>{item.icon}</ListItemIcon>
+                  <ListItemIcon style={{ color: props.colorMap[item.name] }}>{item.icon}</ListItemIcon>
                   <ListItemText primary={item.name} />
                 </ListItem>
               )
